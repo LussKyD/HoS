@@ -1,6 +1,4 @@
-[README.md](https://github.com/user-attachments/files/28987639/README.md)
-# HoS
-Head Of State
+[README.md](https://github.com/user-attachments/files/28990873/README.md)
 # Head of State
 
 **A deep political simulation.**
@@ -42,7 +40,6 @@ and that the simulation is deterministic (same seed → same run).
 ---
 
 
----
 
 ## How it's built (plain version)
 
