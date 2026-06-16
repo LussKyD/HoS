@@ -1,12 +1,16 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, Suspense, lazy } from 'react'
 import { useSimulation, SAVE_KEY } from './ui/useSimulation.js'
 import { POLICIES, PIE_IDS, PRESETS, REGIONS, COUNTRIES, COUNTRY_IDS } from './sim/constants.js'
+
+// The Office pulls in three.js + react-three-fiber (heavy). Lazy-load it so the
+// dashboard loads instantly and the 3D bundle only downloads when you open it.
+const Office = lazy(() => import('./world/Office.jsx'))
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const pct = (v) => `${Math.round((v ?? 0) * 100)}%`
 const money = (v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : Math.round(v).toString()
-const fmtDate = (t) => t ? `${MONTHS[(t.month ?? 1) - 1]} ${t.year} \u00b7 Day ${t.day}` : '\u2014'
-const SPEEDS = [{ v: 0.5, l: '0.5\u00d7' }, { v: 1, l: '1\u00d7' }, { v: 2, l: '2\u00d7' }]
+const fmtDate = (t) => t ? `${MONTHS[(t.month ?? 1) - 1]} ${t.year} Â· Day ${t.day}` : 'â'
+const SPEEDS = [{ v: 0.5, l: '0.5Ã' }, { v: 1, l: '1Ã' }, { v: 2, l: '2Ã' }]
 
 function meterColor(id, v) {
   if (id === 'coupRisk' || id === 'unrest' || id === 'oppositionStrength') return v > 0.6 ? 'var(--red)' : v > 0.4 ? 'var(--amber)' : 'var(--green)'
@@ -61,6 +65,7 @@ function getStoredSave() {
 
 export default function App() {
   const [speed, setSpeed] = useState(1)
+  const [view, setView] = useState('dashboard')
   const [gameKey, setGameKey] = useState(0)
   const [seed, setSeed] = useState(1)
   const [initialSave] = useState(getStoredSave)
@@ -101,17 +106,22 @@ export default function App() {
     <>
       <header className="topbar">
         <div className="brand">HEAD OF <span>STATE</span></div>
-        <div className="date">{fmtDate(state.time)} \u00b7 Term {state.regime.term}</div>
+        <div className="date">{fmtDate(state.time)} Â· Term {state.regime.term}</div>
+        <div className="viewswitch">
+          <button className={`tbtn ${view === 'dashboard' ? 'on' : ''}`} onClick={() => setView('dashboard')}>Dashboard</button>
+          <button className={`tbtn ${view === 'office' ? 'on' : ''}`} onClick={() => setView('office')}>Office</button>
+        </div>
         <div className="spacer" />
         <button className="tbtn" onClick={sim.toggleRunning} disabled={!inPower}>{running ? 'Pause' : 'Resume'}</button>
         {SPEEDS.map((sp) => <button key={sp.v} className={`tbtn ${speed === sp.v ? 'on' : ''}`} onClick={() => setSpeed(sp.v)}>{sp.l}</button>)}
         <button className="tbtn" onClick={newGame}>New term</button>
       </header>
 
+      {view === 'dashboard' && (
       <main className="wrap">
         {crisis && (
           <section className="panel crisis">
-            <h2>Crisis \u2014 your call <small>{crisis.type}</small></h2>
+            <h2>Crisis â your call <small>{crisis.type}</small></h2>
             <p>{crisis.message}</p>
             <div className="opts">
               {crisis.type === 'protest'
@@ -166,7 +176,7 @@ export default function App() {
               const disp = p.id === 'taxRate' || p.id === 'interestRate' || p.pie ? pct(val) : val.toFixed(2)
               return (
                 <div className="slider" key={p.id}>
-                  <div className="row"><span>{p.label}{p.pie ? ' \u00b7 budget' : ''}</span><span className="v">{disp}</span></div>
+                  <div className="row"><span>{p.label}{p.pie ? ' Â· budget' : ''}</span><span className="v">{disp}</span></div>
                   <input type="range" min={p.min} max={p.max} step={p.step} value={val} disabled={!inPower}
                     onChange={(ev) => sim.applyPolicy(p.id, parseFloat(ev.target.value))} />
                   <div className="aff">{p.affects}</div>
@@ -212,7 +222,7 @@ export default function App() {
           <div className="feed">
             {[...state.events].reverse().map((ev) => (
               <div className={`ev ${ev.type}`} key={ev.id}>
-                <span className="when">{MONTHS[(ev.at.month ?? 1) - 1]} {ev.at.year} \u00b7 Day {ev.at.day}</span>
+                <span className="when">{MONTHS[(ev.at.month ?? 1) - 1]} {ev.at.year} Â· Day {ev.at.day}</span>
                 {ev.message}
               </div>
             ))}
@@ -220,6 +230,13 @@ export default function App() {
           </div>
         </section>
       </main>
+      )}
+
+      {view === 'office' && (
+        <Suspense fallback={<div className="office-view"><div className="office-hint">Entering the office…</div></div>}>
+          <Office approval={s.approval} dateLabel={fmtDate(state.time)} term={state.regime.term} />
+        </Suspense>
+      )}
 
       {!inPower && (
         <div className="over">
@@ -231,7 +248,7 @@ export default function App() {
         </div>
       )}
 
-      <footer>DRACO iNC \u2014 A DRACO DYNASTY Technology Department \u00b7 Head of State \u00b7 Alpha</footer>
+      <footer>DRACO iNC â A DRACO DYNASTY Technology Department Â· Head of State Â· Alpha</footer>
     </>
   )
 }
