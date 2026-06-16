@@ -1,3 +1,4 @@
+[00-ARCHITECTURE.md](https://github.com/user-attachments/files/28990998/00-ARCHITECTURE.md)
 # 00 — Architecture
 
 **Head of State** · DRACO iNC — A DRACO DYNASTY Technology Department
