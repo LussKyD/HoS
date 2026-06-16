@@ -41,26 +41,6 @@ and that the simulation is deterministic (same seed → same run).
 
 ---
 
-## How to run it
-
-You need **Node.js** installed (the same tool you already use for other DRACO builds).
-
-```bash
-npm install        # one time — downloads what it needs
-npm run dev        # starts it — open the link it prints (usually http://localhost:5173)
-```
-
-To check the engine without opening the game:
-
-```bash
-npm test           # runs the harness — should print "All checks passed."
-```
-
-To make the final shippable version (for GitHub Pages later):
-
-```bash
-npm run build      # output lands in dist/
-```
 
 ---
 
